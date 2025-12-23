@@ -1,0 +1,9 @@
+# Core Dependencies (Standard Library only used currently)
+# - urllib
+# - sqlite3
+# - logging
+# - threading
+# - json
+
+# Development / Testing
+pytest  # Optional, can also use 'python3 -m unittest discover tests'
