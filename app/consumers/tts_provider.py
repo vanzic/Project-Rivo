@@ -62,6 +62,36 @@ class PiperTTS(TTSProvider):
             logger.error(f"Piper binary not found at {self.binary_path}")
             raise RuntimeError(f"Piper binary not found at {self.binary_path}. See TTS_SETUP.md")
 
+class SystemTTS(TTSProvider):
+    """
+    Offline TTS using macOS native 'say' command.
+    """
+    def generate(self, text: str, output_path: str):
+        # Determine voice (optional, Samantha is decent default)
+        # MacOS say outputs .aiff by default if extension not provided, but we can force it.
+        # But ffmpeg prefers standard formats.
+        
+        # We'll output to the requested path. 'say' infers format from extension if supported, 
+        # or we can output aiff and ffmpeg will handle it.
+        # However, for consistency, let's just let 'say' handle it.
+        
+        cmd = ["say", "-o", output_path, "--data-format=LEF32@44100", text] # Linear PCM float 32
+        
+        # If output path ends in .wav or .mp3, 'say' might complain or do it.
+        # 'say' on modern macs supports --file-format=m4af, etc.
+        # Safe bet: output to AIFF then convert? Or just trust ffmpeg.
+        # Let's try simple command first.
+        
+        cmd = ["say", "-o", output_path, text]
+        
+        logger.info(f"Running System TTS: {' '.join(cmd)}")
+        try:
+            subprocess.run(cmd, check=True)
+            logger.info(f"System TTS successful: {output_path}")
+        except subprocess.CalledProcessError as e:
+            logger.error(f"System TTS failed: {e}")
+            raise RuntimeError(f"System TTS failed: {e}")
+
 class ElevenLabsTTS(TTSProvider):
     """
     Placeholder for online TTS.

@@ -3,7 +3,7 @@ import logging
 import re
 from app.config import load_config
 from app.domain.schemas import ScriptOutput
-from app.consumers.tts_provider import PiperTTS, ElevenLabsTTS
+from app.consumers.tts_provider import PiperTTS, ElevenLabsTTS, SystemTTS
 
 logger = logging.getLogger(__name__)
 
@@ -14,7 +14,7 @@ class AudioGenerator:
     
     def __init__(self):
         self.config = load_config()
-        self.output_dir = os.path.join(os.getcwd(), 'outputs', 'audio')
+        self.output_dir = os.path.join(os.getcwd(), 'outputs', '.cache', 'audio')
         os.makedirs(self.output_dir, exist_ok=True)
         
         self.backend = self.config.get('TTS_BACKEND', 'piper')
@@ -29,9 +29,12 @@ class AudioGenerator:
         elif self.backend == 'elevenlabs':
             logger.info("Initializing ElevenLabsTTS (Placeholder)")
             return ElevenLabsTTS()
+        elif self.backend == 'system':
+            logger.info("Initializing SystemTTS (Mac Native)")
+            return SystemTTS()
         else:
-            logger.warning(f"Unknown TTS backend '{self.backend}', falling back to Piper")
-            return PiperTTS('piper', '')
+            logger.warning(f"Unknown TTS backend '{self.backend}', falling back to SystemTTS")
+            return SystemTTS()
 
     def _sanitize_filename(self, key: str) -> str:
         """Creates a safe filename from the trend key."""
@@ -46,10 +49,13 @@ class AudioGenerator:
         # Concatenate script parts
         full_text = f"{script.hook} {script.context} {script.core_info} {script.payoff} {script.cta}"
         
-        filename = f"{self._sanitize_filename(script.trend_key)}_{script.score}.wav" # Piper usually outputs wav
+        # System TTS (say) defaults to AIFF. Safer to use native format.
+        # FFmpeg reads AIFF perfectly fine.
+        ext = 'aiff' if self.backend == 'system' else 'wav'
+        filename = f"{self._sanitize_filename(script.trend_key)}_{script.score}.{ext}"
         output_path = os.path.join(self.output_dir, filename)
         
-        logger.info(f"Generatng audio for trend: {script.trend_key} using {self.backend}")
+        logger.info(f"Generating audio for trend: {script.trend_key} using {self.backend}")
         
         # Delegate to provider
         self.provider.generate(full_text, output_path)

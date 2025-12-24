@@ -31,16 +31,19 @@ class ScriptOutput:
 @dataclass
 class EditBeat:
     section: str # hook, context, etc.
-    text: str
+    text: str # Spoken text
+    caption: str # Visual text (punchy)
     estimated_duration: float
     emotion: str  # curiosity, tension, clarity, payoff, urgency
     visual_intent: str # cut, zoom, text_overlay, broll
     pattern_break: bool
+    caption_layout: str = 'center' # center, bottom, split, minimal
 
 @dataclass
 class EditBlueprint:
     trend_key: str
     beats: List[EditBeat]
+    visual_style: str = "balanced" # aggressive, balanced, calm
 
     def to_json(self) -> str:
         # Custom helper to handle nested dataclasses

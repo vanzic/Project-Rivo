@@ -48,7 +48,7 @@ def load_config():
 
     # TTS Settings
     if 'TTS_BACKEND' not in final_config:
-        final_config['TTS_BACKEND'] = 'piper'
+        final_config['TTS_BACKEND'] = 'system'
     
     # Piper defaults (assumes user followed setup or valid paths)
     if 'PIPER_BINARY_PATH' not in final_config:

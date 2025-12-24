@@ -86,7 +86,7 @@ def run(limit: int):
             
             # 5. Assemble Video
             logger.info("  -> Assembling Video...")
-            video_path = video_assembler.assemble(audio_path)
+            video_path = video_assembler.assemble(audio_path, blueprint=blueprint)
             logger.info(f"     SUCCESS! Video saved to {video_path}")
             
         except Exception as e:
